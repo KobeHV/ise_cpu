@@ -30,7 +30,7 @@ reg [31:0]DatMem [255:0];
 initial
 begin
     //$readmemh("data.dat", DatMem);
-    $readmemh("E:/ISE/cpu/data.txt", DatMem);
+    $readmemh("data.txt", DatMem);
 end
 	
 wire [31:0]write_o;

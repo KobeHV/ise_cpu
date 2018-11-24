@@ -35,7 +35,7 @@ initial
 begin
     PC = 0 ;
 	//$readmemh("int.dat",IntMem);
-	$readmemh("E:/ISE/cpu/int.txt",IntMem);
+	$readmemh("int.txt",IntMem);
 end
 
 always @(posedge clk)
@@ -57,14 +57,17 @@ end
 //update PC
 
 always @(negedge clk)
-begin 	
-	if(pc_update && !rst)
+begin 
+    if(!rst)
 		begin
-		  PC <= pc_i;
-		end
-	else if(!pc_update && !rst)
-		begin
-		  PC <= PC + 1;
+			if(pc_update)
+				begin
+				  PC <= pc_i;
+				end
+			else if(!pc_update)
+				begin
+				  PC <= PC + 1;
+				end
 		end
 	else
 	   PC <= 0;
@@ -72,4 +75,3 @@ end
 
 
 endmodule
-

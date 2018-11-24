@@ -56,4 +56,3 @@ v_memory Memory(clk,op,alu_o,addr_o,write_o);
 write Write(ife,op,write_o,reg_update,reg_new,pc_update,pc_new);
 
 endmodule
-
