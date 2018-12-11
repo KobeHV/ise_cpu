@@ -18,50 +18,55 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module decode(clk,ir_i,op,A,B,Imm,reg_update,reg_i);
+module decode(clk,ir_id,npc_idi,op_id,A_id,B_id,Imm_id,npc_ido,Ri_id,reg_update,reg_i,Ri_in);
 
-input clk;
-input [31:0]ir_i;
-input reg_update;
-input [31:0]reg_i;
-output [5:0]op;
-output [31:0]A;
-output [31:0]B;
-output [31:0]Imm;
+input        clk;
+input  [31:0]ir_id;
+input  [31:0]npc_idi;
+input        reg_update;
+input  [31:0]reg_i;
+input  [4:0] Ri_in;
+output [5:0] op_id;
+output [31:0]A_id;
+output [31:0]B_id;
+output [31:0]Imm_id;
+output [31:0]npc_ido;
+output [4:0] Ri_id;
 
-
-// 32
 reg [31:0]Regs [31:0];
 initial
 begin
-    Regs[0] = 2;
-    Regs[1] = 3;
-    Regs[2] = 4;
-    Regs[3] = 0;
-	Regs[4] = 3;
+	$readmemh("register.txt",Regs);
 end
 
-wire [4:0]Ri;
-wire [4:0]Rj;
-wire [4:0]Rk;
-wire [5:0]op;
-wire [31:0]A;
-wire [31:0]B;
-wire [31:0]Imm;
-assign Ri = ir_i[25:21];
-assign Rj = ir_i[20:16];
-assign Rk = ir_i[15:11];
+wire [4:0] Ri;
+wire [4:0] Rj;
+wire [4:0] Rk;
+wire [5:0] op_id;
+wire [31:0]A_id;
+wire [31:0]B_id;
+wire [31:0]Imm_id;
+wire [31:0]npc_ido;
+wire [4:0] Ri_id;
 
-assign op = ir_i[31:26];
-
-assign A =  op == 6'b100001 ? 0:   //JMP
-			op == 6'b100000 ? Regs[Ri] ^ Regs[Rj]:  //BEQ，结果为0则跳转
-			Regs[Rj];
-assign B =  (op[5:4] == 2'b00) ? Regs[Rk] : 
-			Regs[Ri];//SW
-assign Imm = op == 6'b100001 ? ir_i[25:0] : //JMP
-	   ir_i[15:0];//BEQ
-
+assign Ri      = ir_id[25:21];
+assign Rj      = ir_id[20:16];
+assign Rk      = ir_id[15:11];
+assign op_id   = ir_id[31:26];
+assign A_id    = op_id[5:4] == 2'b00 ? Regs[Rj]://R-R ALU
+			     op_id[5:4] == 2'b01 ? Regs[Ri]://SW
+			     op_id == 6'b10_0000 ? Regs[Ri]://BEQ
+			     0;
+assign B_id    = op_id[5:4] == 2'b00 ? Regs[Rk] : 
+			     op_id[5:4] == 2'b01 ? Regs[Rj] :
+			     op_id = 6'b10_0000  ? Regs[Rj] ://BEQ
+			     0;
+assign Imm_id  = op_id == 6'b10_0001 ? ir_id[25:0] ://JMP
+	             op_id == 6'b10_0000 ? ir_id[15:0] ://BEQ
+			     0;
+assign npc_ido = npc_idi; 
+assign Ri_id   = Ri;
+				
 always @(negedge clk)
 begin
     if (reg_update)

@@ -19,40 +19,70 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module CPU(rst,clk,PC);
-
-input rst;
-input clk;
+input        rst;
+input        clk;
 output [31:0]PC;
-//fetch module
-wire pc_update;
+
+//IF
+wire [31:0]ir_if;
+wire [31:0]npc_if;
+wire       pc_update;
 wire [31:0]pc_new;
-//wire [31:0]PC;
+fetch Fetch(rst,clk,ir_if,npc_if,pc_update,pc_new,PC);
 
-wire [31:0]ir_o;
-wire [31:0]npc;
-fetch Fetch(rst,clk,ir_o,npc,pc_update,pc_new,PC);
+//ID
+wire [31:0]ir_id;
+wire [31:0]npc_idi;
+wire [5:0] op_id;
+wire [31:0]A_id;
+wire [31:0]B_id;
+wire [31:0]Imm_id;
+wire [31:0]npc_ido;
+wire [4:0] Ri_id;
+wire       reg_update;
+wire [31:0]reg_new;
+wire [4:0] Ri_in;
+//IF/ID
+always @(posedge clk)
+begin
+	
+end
+decode Decode(clk,ir_id,npc_idi,op_id,A_id,B_id,Imm_id,npc_ido,Ri_id,reg_update,reg_new,Ri_in);
 
-//decode module
-wire reg_update;
+//EX
+wire [5:0] op_ex;
+wire [31:0]npc_ex;
+wire [4:0] Ri_exi;
+wire [31:0]A_ex;
+wire [31:0]B_ex;
+wire [31:0]Imm_ex;
+wire [4:0] Ri_exo;
+wire       ife_ex;
+wire [31:0]alu_ex;
+wire [31:0]addr_ex;
+alu Alu(op_ex,npc_ex,Ri_exi,A_ex,B_ex,Imm_ex,Ri_exo,ife_ex,alu_ex,addr_ex);
+
+//MEM
+wire [5:0] op_mem;
+wire [31:0]alu_mem;
+wire [31:0]addr_mem;
+wire       ife_memi;
+wire [4:0] Ri_memi;
+wire       ife_memo;
+wire[4:0]  Ri_memo;
+wire [31:0]write_mem;
+v_memory Memory(clk,op_mem,alu_mem,addr_mem,ife_memi,Ri_memi,ife_memo,Ri_memo,write_mem);
+
+//WB
+wire      ife_wb;
+wire[5:0] op_wb;
+wire[4:0] Ri_wbi;
+wire[31:0]write_wb;
+wire[4:0] Ri_wbo;
+wire      reg_update;
 wire[31:0]reg_new;
-
-wire [5:0]op;
-wire [31:0]A;
-wire [31:0]B;
-wire [31:0]Imm;
-decode Decode(clk,ir_o,op,A,B,Imm,reg_update,reg_new);
-
-//alu module
-wire ife;
-wire [31:0]alu_o;
-wire [31:0]addr_o;
-alu Alu(op,npc,A,B,Imm,ife,alu_o,addr_o);
-
-//v_memory module
-wire [31:0]write_o;
-v_memory Memory(clk,op,alu_o,addr_o,write_o);
-
-//write module
-write Write(ife,op,write_o,reg_update,reg_new,pc_update,pc_new);
+wire      pc_update;
+wire[31:0]pc_new;
+write Write(ife_wb,op_wb,Ri_wbi,write_wb,Ri_wbo,reg_update,reg_new,pc_update,pc_new);
 
 endmodule
