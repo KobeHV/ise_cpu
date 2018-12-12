@@ -18,9 +18,10 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module v_memory(clk,op_mem,alu_mem,addr_mem,ife_memi,Ri_memi,ife_memo,Ri_memo,write_mem);
+module v_memory(clk,op_memi,op_memo,alu_mem,addr_mem,ife_memi,Ri_memi,ife_memo,Ri_memo,write_mem);
 input        clk;
-input [5:0]  op_mem;
+input [5:0]  op_memi;
+output[5:0]  op_memo;
 input [31:0] alu_mem;
 input [31:0] addr_mem;
 input        ife_memi;
@@ -42,14 +43,14 @@ wire [31:0] write_mem;
 
 assign ife_memo  = ife_memi;
 assign Ri_memo   = Ri_memi;
-assign write_mem = op_mem[5:4]==2'b00 ? alu_mem:				 
-				   op_mem[5:4]==2'b10 ? addr_mem:
-				   op_mem==6'b010001 ? DatMem[addr_mem]://LW
+assign write_mem = op_memi[5:4]==2'b00 ? alu_mem:				 
+				   op_memi[5:4]==2'b10 ? addr_mem:
+				   op_memi==6'b010001 ? DatMem[addr_mem]://LW
 				   0;
-
+assign op_memo   = op_memi;
 always @(negedge clk)
 begin
-	if(op==6'b010000)
+	if(op_memi==6'b010000)
 		DatMem[addr_mem] <= alu_mem;//SW	
 end
 

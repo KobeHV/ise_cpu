@@ -21,42 +21,43 @@
 module fetch(rst,clk,ir_if,npc_if,pc_update,pc_i,PC);
 input            rst;
 input            clk;
-input 			 pc_update;
-input      [31:0]pc_i;
 output reg [31:0]ir_if;
 output reg [31:0]npc_if;
+input 			 pc_update;
+input      [31:0]pc_i;
 output reg [31:0]PC; 
 
 //把存储器模块整合到fetch模块里
-reg [31:0]IntMem[255:0];
+reg [31:0]IntMem[255:0] ;
 
 initial
 begin
     PC = 0 ;
+	ir_if = 0;
 	$readmemh("int.txt",IntMem);
 end
 
 always @(posedge clk)
 begin		
 	if(rst) 
-        //PC <= 0;//不能在两个always都对pc有改动，否则综合的时候报错！！！
+        //不要在下降沿写PC，否则chipscop上PC总是比实际大于1
 		 begin
-		 PC <= 0;
-		 ir_if  <= IntMem[PC];
-	     npc_if <= PC+1;
+		 PC     = 0;
+		 ir_if  = IntMem[PC];
+	     npc_if = PC+1;
 		 end
 	else 
-		begin
-			ir_if  <= IntMem[PC];
-			npc_if <= PC + 1;
+		begin			
 			if(pc_update == 1)
 				begin
-				  PC <= pc_i;
+				  PC = pc_i;
 				end
 			else
 				begin
-				  PC <= PC + 1;
+				  PC = PC + 1;
 				end
+			ir_if  = IntMem[PC];
+			npc_if = PC + 1;
 		end
 end
 
